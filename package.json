@@ -1,0 +1,27 @@
+{
+  "name": "react-native-yyscrollview",
+  "version": "0.0.1",
+  "description": "scrollview/listview with pull-to-refresh and pull-to-loadmore",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/yiyangest/react-native-yyscrollview.git"
+  },
+  "keywords": [
+    "scrollview",
+    "pull-to-refresh",
+    "react-native"
+  ],
+  "author": "yiyangest",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/yiyangest/react-native-yyscrollview/issues"
+  },
+  "homepage": "https://github.com/yiyangest/react-native-yyscrollview#readme",
+  "dependencies": {
+    "react-native-scrollable-mixin": "^1.0.1"
+  }
+}
