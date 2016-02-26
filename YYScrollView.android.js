@@ -36,6 +36,7 @@ class DataScrollView extends React.Component {
             refreshStatus: REFRESH_STATUS.NONE,
             isRefreshing: false,
             loadingStatus: REFRESH_STATUS.NONE,
+            isAllLoaded: false,
         }
     }
 
@@ -115,6 +116,16 @@ class DataScrollView extends React.Component {
             </View>
         );
     }
+    allLoadedView() {
+        if (this.props.allLoadedView) {
+            return this.props.allLoadedView();
+        }
+        return (
+            <View style={[defaultStyles.refreshableView, {height: this.props.loadmoreViewHeight}]}>
+                <Text>已经全部加载完毕</Text>
+            </View>
+        );
+    }
 
     _renderLoadmoreView() {
         this._footerIsRender = true;
@@ -162,23 +173,29 @@ class DataScrollView extends React.Component {
     }
     _renderFooterView() {
         let footerView = null;
-        if (this.props.enableLoadmore) {
-            footerView = this._renderLoadmoreView();
-        }
         if (this._isEmpty()) {
             return this._renderEmptyView();
+        }
+        if (this.props.enableLoadmore) {
+
+            if (this.state.isAllLoaded) {
+                footerView = this.allLoadedView();
+            } else {
+                footerView = this._renderLoadmoreView();
+            }
         }
         if (this.props.renderFooter) {
             return (
                 <View>
-                    {this.props.renderFooter()}
                     {footerView}
+                    {this.props.renderFooter()}
                 </View>
             );
         }
 
         return footerView;
     }
+
 
     render() {
         if (this.props.isListView) {
@@ -193,7 +210,9 @@ class DataScrollView extends React.Component {
                 colors={['#ff0000', '#00ff00', '#0000ff']}
                 progressBackgroundColor={'#ffff00'}
             >
-                <ScrollView style={{flex: 1}}>
+                <ScrollView
+                    {...this.props}
+                    style={[this.props.style, {flex: 1}]}>
                     {this.props.children}
                 </ScrollView>
             </PullToRefreshViewAndroid>
@@ -225,6 +244,13 @@ class DataScrollView extends React.Component {
     isMounted() {
         return this._isMounted;
     }
+    setIsAllLoaded(isAllLoaded) {
+        if (this.props.enableLoadmore) {
+            this.setState({
+                isAllLoaded: isAllLoaded
+            });
+        }
+    }
 
     autoRefresh() {
         this._onRefresh();
@@ -233,7 +259,8 @@ class DataScrollView extends React.Component {
         if (this.isMounted()) {
             this.setState({
                 refreshStatus: REFRESH_STATUS.REFRESHING,
-                isRefreshing: true
+                isRefreshing: true,
+                isAllLoaded: false,
             });
             this.props.onRefresh(this._endRefresh.bind(this));
         }
@@ -252,7 +279,7 @@ class DataScrollView extends React.Component {
     }
 
     _onEndReached() {
-        if (this.state.loadingStatus !== REFRESH_STATUS.LOADING && !this._isEmpty()) {
+        if (this.state.loadingStatus !== REFRESH_STATUS.LOADING && !this._isEmpty() && !this.state.isAllLoaded) {
             this._onLoadmore();
         }
     }
