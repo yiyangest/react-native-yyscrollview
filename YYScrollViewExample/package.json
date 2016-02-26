@@ -1,0 +1,12 @@
+{
+  "name": "YYScrollView",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "start": "react-native start"
+  },
+  "dependencies": {
+    "react-native": "^0.20.0",
+    "react-native-yyscrollview": "^0.0.x"
+  }
+}
