@@ -13,7 +13,7 @@ import React, {
   Text,
   View,
 } from 'react-native';
-import AScrollView from './react-native-yyscrollview';
+import AScrollView from 'react-native-yyscrollview';
 
 var API_KEY = '7waqfqbprs7pajbz28mqf6vz';
 var API_URL = 'http://api.rottentomatoes.com/api/public/v1.0/lists/movies/in_theaters.json';
@@ -30,27 +30,50 @@ class AwesomeProject extends Component {
       }),
       loaded: false,
     };
+    this._list = [];
+    this._page = 1;
   }
 
   componentDidMount() {
-    this.fetchData();
+    this.refresh();
   }
 
-  fetchData(finishCallback) {
-    fetch(REQUEST_URL)
-      .then((response) => response.json())
-      .then((responseData) => {
-        this.setState({
-          dataSource: this.state.dataSource.cloneWithRows(responseData.movies),
-          loaded: true,
-        });
-        finishCallback && finishCallback();
-      })
-      .catch((error)=>{
-          console.log("error: ", error);
+  fetchData(url, isRefresh, finishCallback) {
+      fetch(url)
+        .then((response) => response.json())
+        .then((responseData) => {
+            let newlist;
+            if (isRefresh) {
+                newlist = responseData.movies;
+            } else {
+                newlist = this._list.slice().concat(responseData.movies);
+            }
+            this._list = newlist;
+          this.setState({
+            dataSource: this.state.dataSource.cloneWithRows(newlist),
+            loaded: true,
+          });
           finishCallback && finishCallback();
-      })
-      .done();
+          if (this._page >= 3) {
+              this.refs["scrollView"].setIsAllLoaded(true);
+          }
+        })
+        .catch((error)=>{
+            console.log("error: ", error);
+            finishCallback && finishCallback();
+        })
+        .done();
+  }
+
+  refresh(finishCallback) {
+      let url = REQUEST_URL;
+      this._page = 1;
+      this.fetchData(url, true, finishCallback);
+  }
+
+  loadmore(finishCallback, page) {
+      let url = REQUEST_URL + "&page=" + page;
+      this.fetchData(url, false, finishCallback);
   }
 
   render() {
@@ -60,13 +83,14 @@ class AwesomeProject extends Component {
 
     return (
       <AScrollView
+          ref="scrollView"
           dataSource={this.state.dataSource}
         renderRow={this.renderMovie}
         style={styles.listView}
         isListView={true}
         enableLoadmore={true}
-        onRefresh={(endRefresh)=>{this.fetchData(endRefresh);}}
-        onLoadmore={(endRefresh)=>{this.fetchData(endRefresh);}}
+        onRefresh={(endRefresh)=>{this.refresh(endRefresh);}}
+        onLoadmore={(endRefresh)=>{this.loadmore(endRefresh, ++this._page);}}
         emptyText="No Movies!"
       />
     );
