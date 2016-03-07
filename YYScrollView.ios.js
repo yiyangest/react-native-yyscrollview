@@ -66,6 +66,10 @@ class DataScrollView extends React.Component {
         this._isMounted = true;
     }
 
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+
     getScrollResponder(): ReactComponent {
         return this._scrollComponent.getScrollResponder();
     }
@@ -357,6 +361,7 @@ class DataScrollView extends React.Component {
 
     setIsAllLoaded(isAllLoaded) {
         if (this.props.enableLoadmore) {
+            this.isMounted &&
             this.setState({
                 isAllLoaded: isAllLoaded
             });
@@ -393,6 +398,7 @@ class DataScrollView extends React.Component {
     }
 
     _onLoadmore() {
+        this.isMounted() &&
         this.setState({
             loadingStatus: REFRESH_STATUS.LOADING
         });
@@ -400,6 +406,7 @@ class DataScrollView extends React.Component {
     }
 
     _endLoadmore() {
+        this.isMounted() &&
         this.setState({
             loadingStatus: REFRESH_STATUS.NONE
         });

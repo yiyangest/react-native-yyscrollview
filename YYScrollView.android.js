@@ -68,6 +68,10 @@ class DataScrollView extends React.Component {
         this._isMounted = true;
     }
 
+    componentWillUnmount() {
+        this._isMounted = false;
+    }
+
 
     loadmoreFetchingView() {
         if (this.props.loadmoreFetchingView) {
@@ -246,9 +250,7 @@ class DataScrollView extends React.Component {
     }
     setIsAllLoaded(isAllLoaded) {
         if (this.props.enableLoadmore) {
-            this.setState({
-                isAllLoaded: isAllLoaded
-            });
+            this.isMounted() && this.setState({isAllLoaded: isAllLoaded});
         }
     }
 
