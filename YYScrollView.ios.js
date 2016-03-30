@@ -21,7 +21,14 @@ const REFRESH_STATUS = {
     RELEASE_TO_LOAD: 4, // 松开加载
     LOADING: 5, // 正在加载
     NONE: 6, // 加载不显示
-}
+};
+
+const LIST_STATUS = {
+    NORMAL: 'normal',
+    EMPTY: 'empty',
+    ERROR: 'error',
+    ALL_LOAD: 'all_load'
+};
 
 class DataScrollView extends React.Component {
     constructor(props) {
@@ -35,6 +42,7 @@ class DataScrollView extends React.Component {
             isRefreshing: false,
             loadingStatus: REFRESH_STATUS.NONE,
             isAllLoaded: false,
+            listStatus: this.props.listStatus
         }
     }
 
@@ -58,7 +66,10 @@ class DataScrollView extends React.Component {
             endRefresh();
         },
 
+        listStatus: LIST_STATUS.NORMAL,
+
         emptyText: "您目前没有数据",
+        errorText: "开小差啦...",
         renderScrollComponent: props => <ScrollView {...props} />,
     };
 
@@ -68,6 +79,12 @@ class DataScrollView extends React.Component {
 
     componentWillUnmount() {
         this._isMounted = false;
+    }
+
+    componentWillReceiveProps(newProps) {
+        if (this.props && this.props.listStatus !== newProps.listStatus) {
+            this.setState({listStatus: newProps.listStatus});
+        }
     }
 
     getScrollResponder(): ReactComponent {
@@ -200,13 +217,13 @@ class DataScrollView extends React.Component {
         switch (this.state.refreshStatus) {
             case REFRESH_STATUS.REFRESHING:
                 return this.refreshableFetchingView();
-            break;
+                break;
             case REFRESH_STATUS.RELEASE_TO_REFRESH:
                 return this.refreshableWillRefreshView();
-            break;
+                break;
             case REFRESH_STATUS.DONE:
                 return this.refreshableFinishView();
-            break;
+                break;
             case REFRESH_STATUS.INIT:
                 return this.refreshableWaitingView();
             default:
@@ -220,13 +237,13 @@ class DataScrollView extends React.Component {
         switch (this.state.loadingStatus) {
             case REFRESH_STATUS.LOADING:
                 return this.loadmoreFetchingView();
-            break;
+                break;
             case REFRESH_STATUS.RELEASE_TO_LOAD:
                 return this.loadmoreWillLoadView();
-            break;
+                break;
             case REFRESH_STATUS.INIT:
                 return this.loadmoreWaitingView();
-            break;
+                break;
             case REFRESH_STATUS.DONE:
                 return this.loadmoreFinishView();
             default:
@@ -259,6 +276,26 @@ class DataScrollView extends React.Component {
             </View>
         );
     }
+
+    _renderErrorView() {
+        if (this.props.renderErrorView) {
+            return this.props.renderErrorView();
+        }
+        let errorIcon;
+        if (this.props.errorIcon) {
+            errorIcon = (
+                <Image style={defaultStyles.emptyIcon} source={this.props.errorIcon} />
+            );
+        }
+
+        return (
+            <View style={defaultStyles.emptyView}>
+                {emptyIcon}
+                <Text style={defaultStyles.emptyText}>{this.props.errorText}</Text>
+            </View>
+        );
+    }
+
     _renderHeaderView() {
         if (this.props.renderHeader) {
             return (
@@ -272,14 +309,14 @@ class DataScrollView extends React.Component {
     }
     _renderFooterView() {
         let footerView = null;
-        if (this._isEmpty()) {
+        if (this.state.listStatus === LIST_STATUS.ERROR) {
+            return this._renderErrorView();
+        } else if (this.state.listStatus === LIST_STATUS.EMPTY) {
             return this._renderEmptyView();
-        }
-        if (this.props.enableLoadmore) {
-
-            if (this.state.isAllLoaded) {
-                footerView = this.allLoadedView();
-            } else {
+        } else if (this.state.listStatus === LIST_STATUS.ALL_LOAD) {
+            footerView = this.allLoadedView();
+        } else {
+            if (this.props.enableLoadmore) {
                 footerView = this._renderLoadmoreView();
             }
         }
@@ -296,40 +333,17 @@ class DataScrollView extends React.Component {
     }
 
     render() {
-        // let refreshHeader;
-        // if (this.props.enableRefresh) {
-        //     refreshHeader = cloneElement(this._renderRefreshView(), {key: 'dscroll_refresh_header'});
-        // }
-        // let loadmoreFooter;
-        // if (this.props.enableLoadmore) {
-        //     loadmoreFooter = cloneElement(this._renderLoadmoreView(), {key: 'dscroll_loadmore_footer'});
-        // }
-        // let {
-        //     renderScrollComponent,
-        //     ...props,
-        // } = this.props;
-        // Object.assign(props, {
-        //     onScroll: this._onScroll.bind(this),
-        //     onResponderRelease: this._onResponderRelease.bind(this),
-        //     onResponderGrant: this._onResponderGrant.bind(this),
-        //     contentContainerStyle: [{top: -this.props.refreshableViewHeight}],
-        //     children: [refreshHeader, this.props.children, loadmoreFooter],
-        // });
-        //
-        // return cloneElement(renderScrollComponent(props),{
-        //     ref: component => {this._scrollComponent = component;},
-        // });
         if (this.props.isListView) {
             return this.renderListView();
         }
         return (
             <ScrollView scrollEventThrottle={200}
-                ref={(component)=>this._scrollComponent=component}
-                automaticallyAdjustContentInsets={false}
-                onScroll={this._onScroll.bind(this)}
-                style={this.props.style}
-                contentContainerStyle={[{top: -this.props.refreshableViewHeight}]}
-                onResponderRelease={this._onResponderRelease.bind(this)}>
+                        ref={(component)=>this._scrollComponent=component}
+                        automaticallyAdjustContentInsets={false}
+                        onScroll={this._onScroll.bind(this)}
+                        style={this.props.style}
+                        contentContainerStyle={[{top: -this.props.refreshableViewHeight}]}
+                        onResponderRelease={this._onResponderRelease.bind(this)}>
                 <View>
                     {this._renderRefreshView()}
                     {this.props.children}
@@ -350,7 +364,7 @@ class DataScrollView extends React.Component {
                       renderHeader={this._renderHeaderView.bind(this)}
                       renderFooter={this._renderFooterView.bind(this)}
 
-                      {...this.props}
+                {...this.props}
                       contentContainerStyle={[{top: -this.props.refreshableViewHeight}]}
             />
         );
@@ -457,8 +471,8 @@ class DataScrollView extends React.Component {
                 this.setState({refreshStatus: REFRESH_STATUS.RELEASE_TO_REFRESH, isRefreshing: false});
             } else if (topOffset <= this.props.refreshableDistance &&
                 (this.state.refreshStatus == REFRESH_STATUS.RELEASE_TO_REFRESH ||
-                    this.state.refreshStatus == REFRESH_STATUS.DONE ||
-                    this.state.refreshStatus == REFRESH_STATUS.NONE)) {
+                this.state.refreshStatus == REFRESH_STATUS.DONE ||
+                this.state.refreshStatus == REFRESH_STATUS.NONE)) {
                 this.setState({refreshStatus: REFRESH_STATUS.INIT, isRefreshing: false});
             }
         } else if (topOffset > 0){

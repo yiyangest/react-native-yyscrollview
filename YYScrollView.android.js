@@ -23,7 +23,14 @@ const REFRESH_STATUS = {
     RELEASE_TO_LOAD: 4, // 松开加载
     LOADING: 5, // 正在加载
     NONE: 6, // 加载不显示
-}
+};
+
+const LIST_STATUS = {
+    NORMAL: 'normal',
+    EMPTY: 'empty',
+    ERROR: 'error',
+    ALL_LOAD: 'all_load'
+};
 
 class DataScrollView extends React.Component {
     constructor(props) {
@@ -37,6 +44,7 @@ class DataScrollView extends React.Component {
             isRefreshing: false,
             loadingStatus: REFRESH_STATUS.NONE,
             isAllLoaded: false,
+            listStatus: this.props.listStatus
         }
     }
 
@@ -60,7 +68,10 @@ class DataScrollView extends React.Component {
             endRefresh();
         },
 
+        listStatus: LIST_STATUS.NORMAL,
+
         emptyText: "您目前没有数据",
+        errorText: "开小差啦...",
         renderScrollComponent: props => <ScrollView {...props} />,
     };
 
@@ -70,6 +81,12 @@ class DataScrollView extends React.Component {
 
     componentWillUnmount() {
         this._isMounted = false;
+    }
+
+    componentWillReceiveProps(newProps) {
+        if (this.props && this.props.listStatus !== newProps.listStatus) {
+            this.setState({listStatus: newProps.listStatus});
+        }
     }
 
 
@@ -175,16 +192,35 @@ class DataScrollView extends React.Component {
             </View>
         );
     }
+    _renderErrorView() {
+        if (this.props.renderErrorView) {
+            return this.props.renderErrorView();
+        }
+        let errorIcon;
+        if (this.props.errorIcon) {
+            errorIcon = (
+                <Image style={defaultStyles.emptyIcon} source={this.props.errorIcon} />
+            );
+        }
+
+        return (
+            <View style={defaultStyles.emptyView}>
+                {emptyIcon}
+                <Text style={defaultStyles.emptyText}>{this.props.errorText}</Text>
+            </View>
+        );
+    }
+
     _renderFooterView() {
         let footerView = null;
-        if (this._isEmpty()) {
+        if (this.state.listStatus === LIST_STATUS.ERROR) {
+            return this._renderErrorView();
+        } else if (this.state.listStatus === LIST_STATUS.EMPTY) {
             return this._renderEmptyView();
-        }
-        if (this.props.enableLoadmore) {
-
-            if (this.state.isAllLoaded) {
-                footerView = this.allLoadedView();
-            } else {
+        } else if (this.state.listStatus === LIST_STATUS.ALL_LOAD) {
+            footerView = this.allLoadedView();
+        } else {
+            if (this.props.enableLoadmore) {
                 footerView = this._renderLoadmoreView();
             }
         }
