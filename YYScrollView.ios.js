@@ -269,9 +269,10 @@ class DataScrollView extends React.Component {
             emptyIcon = (
                 <Image style={defaultStyles.emptyIcon} source={this.props.emptyIcon}/>
             );
+        } else {
             textStyle = {
                 marginTop: 200
-            }
+            };
         }
 
         return (
@@ -287,17 +288,22 @@ class DataScrollView extends React.Component {
             return this.props.renderErrorView();
         }
         let errorIcon;
+        let textStyle;
         if (this.props.errorIcon) {
             errorIcon = (
                 <Image style={defaultStyles.emptyIcon} source={this.props.errorIcon} />
             );
+        } else {
+            textStyle = {
+                marginTop: 200
+            };
         }
 
         return (
             <TouchableOpacity style={defaultStyles.emptyView} activeOpacity={0.6} onPress={()=>this.autoRefresh()}>
                 <View style={defaultStyles.emptyView}>
                     {errorIcon}
-                    <Text style={defaultStyles.emptyText}>{this.props.errorText}</Text>
+                    <Text style={[defaultStyles.emptyText, textStyle]}>{this.props.errorText}</Text>
                 </View>
             </TouchableOpacity>
         );
