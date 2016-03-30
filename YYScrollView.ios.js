@@ -8,6 +8,7 @@ import React, {
     Text,
     StyleSheet,
     Image,
+    TouchableOpacity,
     cloneElement,
 } from 'react-native';
 import ScrollableMixin from 'react-native-scrollable-mixin';
@@ -69,7 +70,7 @@ class DataScrollView extends React.Component {
         listStatus: LIST_STATUS.NORMAL,
 
         emptyText: "您目前没有数据",
-        errorText: "开小差啦...",
+        errorText: "开小差啦..., 点击屏幕重新加载",
         renderScrollComponent: props => <ScrollView {...props} />,
     };
 
@@ -263,16 +264,20 @@ class DataScrollView extends React.Component {
             return this.props.renderEmptyView();
         }
         let emptyIcon;
+        let textStyle;
         if (this.props.emptyIcon) {
             emptyIcon = (
                 <Image style={defaultStyles.emptyIcon} source={this.props.emptyIcon}/>
             );
+            textStyle = {
+                marginTop: 200
+            }
         }
 
         return (
             <View style={defaultStyles.emptyView}>
                 {emptyIcon}
-                <Text style={defaultStyles.emptyText}>{this.props.emptyText}</Text>
+                <Text style={[defaultStyles.emptyText, textStyle]}>{this.props.emptyText}</Text>
             </View>
         );
     }
@@ -289,10 +294,12 @@ class DataScrollView extends React.Component {
         }
 
         return (
-            <View style={defaultStyles.emptyView}>
-                {emptyIcon}
-                <Text style={defaultStyles.emptyText}>{this.props.errorText}</Text>
-            </View>
+            <TouchableOpacity style={defaultStyles.emptyView} activeOpacity={0.6} onPress={()=>this.autoRefresh()}>
+                <View style={defaultStyles.emptyView}>
+                    {errorIcon}
+                    <Text style={defaultStyles.emptyText}>{this.props.errorText}</Text>
+                </View>
+            </TouchableOpacity>
         );
     }
 
