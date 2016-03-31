@@ -567,5 +567,6 @@ var defaultStyles = StyleSheet.create({
 });
 
 Object.assign(DataScrollView.prototype, ScrollableMixin);
+DataScrollView.LIST_STATUS = LIST_STATUS;
 
 export default DataScrollView;
