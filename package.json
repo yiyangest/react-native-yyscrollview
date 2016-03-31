@@ -1,6 +1,6 @@
 {
   "name": "react-native-yyscrollview",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "scrollview/listview with pull-to-refresh and pull-to-loadmore",
   "main": "index.js",
   "scripts": {
